@@ -74,11 +74,11 @@ export const getCustomers = async () => {
   return [
     {
       id: 1,
-      name: "Venkateswaran",
+      name: "Usman",
       amount: "2,155.00",
       month: "December",
       dueDate: "22-10-2024",
-      phone: "+918511044804",
+      phone: "+917006572213",
       bank: "Federal Bank",
     },
     {
