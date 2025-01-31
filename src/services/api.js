@@ -70,7 +70,7 @@ export const sendWhatsAppMessage = async (customerData) => {
 };
 
 export const getCustomers = async () => {
-  // This is a mock function - replace with your actual API endpoint
+  //neeed api for retrieving customers data
   return [
     {
       id: 1,
@@ -92,6 +92,15 @@ export const getCustomers = async () => {
     },
     {
       id: 3,
+      name: "Shiyas",
+      amount: "2,255.00",
+      month: "May",
+      dueDate: "22-10-2024",
+      phone: "+919611295145",
+      bank: "Dhanlaxmi Bank",
+    },
+    {
+      id: 4,
       name: "Vinay",
       amount: "14,200.00",
       month: "December",
@@ -100,7 +109,7 @@ export const getCustomers = async () => {
       bank: "Federal Bank",
     },
     {
-      id: 4,
+      id: 5,
       name: "Vaishakh",
       amount: "2,255.00",
       month: "May",
@@ -109,7 +118,7 @@ export const getCustomers = async () => {
       bank: "ICICI Bank",
     },
     {
-      id: 5,
+      id: 6,
       name: "Devansh",
       amount: "2,255.00",
       month: "May",

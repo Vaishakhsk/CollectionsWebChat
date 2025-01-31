@@ -36,9 +36,9 @@ const ChatWindow = ({ selectedCustomer }) => {
       const newMessage = {
         content: message,
         timestamp: new Date(),
-        type: "sent"
+        type: "sent",
       };
-      setMessages(prev => [...prev, newMessage]);
+      setMessages((prev) => [...prev, newMessage]);
 
       if (message.trim().toUpperCase() === "EMI") {
         try {
@@ -139,7 +139,6 @@ const ChatWindow = ({ selectedCustomer }) => {
         </Box>
       </Paper>
 
-      {/* Chat Messages */}
       <Box
         sx={{
           flexGrow: 1,
@@ -153,7 +152,6 @@ const ChatWindow = ({ selectedCustomer }) => {
           gap: 2,
         }}
       >
-        {/* System Message */}
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Paper
             sx={{
@@ -236,7 +234,8 @@ const ChatWindow = ({ selectedCustomer }) => {
                 p: 2,
                 maxWidth: "70%",
                 bgcolor: msg.type === "sent" ? "#dcf8c6" : "#FFF",
-                borderRadius: msg.type === "sent" ? "8px 8px 0 8px" : "0 8px 8px 8px",
+                borderRadius:
+                  msg.type === "sent" ? "8px 8px 0 8px" : "0 8px 8px 8px",
               }}
             >
               <Typography variant="body1">{msg.content}</Typography>
@@ -322,7 +321,8 @@ const ChatWindow = ({ selectedCustomer }) => {
           severity={snackbar.severity}
           icon={false}
           sx={{
-            backgroundColor: snackbar.severity === "success" ? "#128C7E" : "#d32f2f",
+            backgroundColor:
+              snackbar.severity === "success" ? "#128C7E" : "#d32f2f",
             color: "#fff",
             "& .MuiAlert-action": {
               alignItems: "center",

@@ -69,7 +69,7 @@ const Navbar = ({ onNewChat }) => {
         <Toolbar sx={{ justifyContent: "space-between" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography
-              variant="h8"
+              variant="h5"
               component="div"
               sx={{
                 fontFamily: "Poppins",
