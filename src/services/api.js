@@ -1,10 +1,7 @@
 import axios from "axios";
 
-const API_URL = "https://graph.facebook.com/v21.0/472391889294613/messages";
-
-// You should store this in an environment variable
-const ACCESS_TOKEN =
-  "EAAR4Iz3BWgkBO8BIaMjD1iDZA8zm8ZBfsnyTmZB2w3Nf1PlmJPcGTuYygu1eSza8JptWzHuOPcNbBiDC2ztu0teF9eBmjzh9M3JZA2obZCuPYbgnsamuRe5BNFlVP16of1vXdth6OQoYJ8LvdsnpazhrdPCVYZC47DhGTiTtR4jrKNKBuoWh7ri9s5POM2vRIU0RHLNiJgkn60QtVJBQZDZD";
+const API_URL = process.env.REACT_APP_WHATSAPP_API_URL;
+const ACCESS_TOKEN = process.env.REACT_APP_WHATSAPP_ACCESS_TOKEN;
 
 const api = axios.create({
   baseURL: API_URL,
@@ -86,20 +83,20 @@ export const getCustomers = async () => {
     },
     {
       id: 2,
-      name: "Rahul Kumar",
+      name: "Manju",
       amount: "3,500.00",
       month: "January",
       dueDate: "25-10-2024",
-      phone: "+918511044804",
-      bank: "Federal Bank",
+      phone: "+918970824224",
+      bank: "KVB Bank",
     },
     {
       id: 3,
-      name: "Priya Singh",
-      amount: "4,200.00",
+      name: "Vinay",
+      amount: "14,200.00",
       month: "December",
       dueDate: "28-10-2024",
-      phone: "+918511044804",
+      phone: "+916302492621",
       bank: "Federal Bank",
     },
     {
@@ -109,7 +106,16 @@ export const getCustomers = async () => {
       month: "May",
       dueDate: "22-10-2024",
       phone: "+918511044804",
-      bank: "Federal Bank",
+      bank: "ICICI Bank",
+    },
+    {
+      id: 5,
+      name: "Devansh",
+      amount: "2,255.00",
+      month: "May",
+      dueDate: "22-10-2024",
+      phone: "+919711919359",
+      bank: "HDFC Bank",
     },
   ];
 };

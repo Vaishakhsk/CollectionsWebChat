@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Container, Paper, Grid, Snackbar, Alert } from '@mui/material';
-import Navbar from './components/Navbar';
-import CustomerList from './components/CustomerList';
-import ChatWindow from './components/ChatWindow';
-import { getCustomers, sendWhatsAppMessage } from './services/api';
+import { Alert, Box, Container, Snackbar } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import ChatWindow from "./components/ChatWindow";
+import CustomerList from "./components/CustomerList";
+import Navbar from "./components/Navbar";
+import { getCustomers } from "./services/api";
 
 function App() {
   const [customers, setCustomers] = useState([]);
@@ -11,8 +11,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: '',
-    severity: 'success'
+    message: "",
+    severity: "success",
   });
 
   useEffect(() => {
@@ -25,84 +25,94 @@ function App() {
       setCustomers(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
       setSnackbar({
         open: true,
-        message: 'Error loading customers',
-        severity: 'error'
+        message: "Error loading customers",
+        severity: "error",
       });
       setLoading(false);
     }
   };
 
-  const handleCustomerSelect = async (customer) => {
+  const handleCustomerSelect = (customer) => {
     setSelectedCustomer(customer);
-    try {
-      await sendWhatsAppMessage(customer);
-      setSnackbar({
-        open: true,
-        message: 'WhatsApp message sent successfully!',
-        severity: 'success'
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Error sending WhatsApp message',
-        severity: 'error'
-      });
-    }
+  };
+
+  const handleNewChat = (newCustomer) => {
+    setCustomers((prev) => [newCustomer, ...prev]);
+    setSelectedCustomer(newCustomer);
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   return (
-    <Box className="app-container">
-      <Navbar />
-      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 2 }}>
-        <Paper
-          elevation={3}
+    <Container maxWidth={false} disableGutters sx={{ height: "100vh" }}>
+      <Box sx={{ display: "flex", height: "100%" }}>
+        <Box
           sx={{
-            height: 'calc(100vh - 100px)',
-            display: 'flex',
-            overflow: 'hidden',
+            width: 400,
+            borderRight: 1,
+            borderColor: "divider",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <Grid container>
-            <Grid
-              item
-              xs={3}
-              sx={{
-                borderRight: 1,
-                borderColor: 'divider',
-                height: '100%',
-              }}
-            >
-              <CustomerList
-                customers={customers}
-                selectedCustomer={selectedCustomer}
-                onSelectCustomer={handleCustomerSelect}
-                loading={loading}
-              />
-            </Grid>
-            <Grid item xs={9}>
-              <ChatWindow selectedCustomer={selectedCustomer} />
-            </Grid>
-          </Grid>
-        </Paper>
-      </Container>
+          <Navbar onNewChat={handleNewChat} />
+          <CustomerList
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            onSelectCustomer={handleCustomerSelect}
+            loading={loading}
+          />
+        </Box>
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <ChatWindow selectedCustomer={selectedCustomer} />
+        </Box>
+      </Box>
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{
+          "& .MuiPaper-root": {
+            backgroundColor: "#075E54",
+            borderRadius: "4px",
+            minWidth: "auto",
+          },
+        }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          icon={false}
+          sx={{
+            backgroundColor:
+              snackbar.severity === "success" ? "#128C7E" : "#d32f2f",
+            color: "#fff",
+            "& .MuiAlert-action": {
+              alignItems: "center",
+              color: "#fff",
+            },
+            minWidth: "auto",
+            px: 2,
+            py: 1,
+          }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 }
 
