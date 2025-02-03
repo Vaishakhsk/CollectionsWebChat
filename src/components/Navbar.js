@@ -12,10 +12,12 @@ import {
   DialogActions,
   Button,
   TextField,
+  InputAdornment,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
+import chat from "../assets/logos/chat.png";
 
 const Navbar = ({ onNewChat }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -50,7 +52,7 @@ const Navbar = ({ onNewChat }) => {
       setError("Please enter a valid 10-digit mobile number");
       return;
     }
-    const formattedPhone = `+91${phoneNumber}`;
+    const formattedPhone = `+91  ${phoneNumber}`;
     onNewChat({
       id: Date.now(),
       name: formattedPhone,
@@ -78,6 +80,7 @@ const Navbar = ({ onNewChat }) => {
             >
               Dhanam
             </Typography>
+            <img src={chat} alt="Chat" />
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -127,7 +130,11 @@ const Navbar = ({ onNewChat }) => {
             sx={{ mt: 2 }}
             InputProps={{
               startAdornment: (
-                <span style={{ color: "rgba(0, 0, 0, 0.54)" }}>+91 </span>
+                <InputAdornment position="start">
+                  <Typography sx={{ color: "text.secondary", mr: 0.5 }}>
+                    +91
+                  </Typography>
+                </InputAdornment>
               ),
             }}
           />
