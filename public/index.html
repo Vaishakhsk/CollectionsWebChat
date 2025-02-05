@@ -5,10 +5,29 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Dhanam Chat Application" />
+
+    <!-- Security Headers -->
     <meta
-      name="description"
-      content="Web site created using create-react-app"
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://live-mt-server.wati.io; connect-src 'self' https://live-mt-server.wati.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
     />
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <meta
+      http-equiv="Access-Control-Allow-Methods"
+      content="GET, POST, PUT, DELETE, OPTIONS"
+    />
+    <meta
+      http-equiv="Access-Control-Allow-Headers"
+      content="Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta
+      http-equiv="Strict-Transport-Security"
+      content="max-age=31536000; includeSubDomains"
+    />
+
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a

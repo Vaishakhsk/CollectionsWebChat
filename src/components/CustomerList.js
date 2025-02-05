@@ -1,286 +1,185 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
   List,
-  ListItemButton,
+  ListItem,
   ListItemText,
-  Typography,
-  Divider,
-  CircularProgress,
-  Avatar,
   ListItemAvatar,
-  InputBase,
+  Avatar,
+  Typography,
   Paper,
-  IconButton,
-  Badge,
+  TextField,
+  InputAdornment,
+  Box,
+  CircularProgress,
+  Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { alpha, styled } from "@mui/material/styles";
+import { formatDistanceToNow } from "date-fns";
+import { getContacts } from "../services/watiService";
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  "& .MuiBadge-badge": {
-    backgroundColor: "#44b700",
-    color: "#44b700",
-    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-    "&::after": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      borderRadius: "50%",
-      animation: "ripple 1.2s infinite ease-in-out",
-      border: "1px solid currentColor",
-      content: '""',
-    },
-  },
-  "@keyframes ripple": {
-    "0%": {
-      transform: "scale(.8)",
-      opacity: 1,
-    },
-    "100%": {
-      transform: "scale(2.4)",
-      opacity: 0,
-    },
-  },
-}));
+const CustomerList = ({ onSelectCustomer, selectedCustomer }) => {
+  const [customers, setCustomers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-const StyledInputBase = styled(InputBase)({
-  "& .MuiInputBase-input": {
-    fontFamily: "Poppins, sans-serif",
-  },
-});
+  useEffect(() => {
+    fetchCustomers();
+    // Refresh contacts every 30 seconds
+    const interval = setInterval(fetchCustomers, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-const CustomerList = ({
-  customers,
-  selectedCustomer,
-  onSelectCustomer,
-  loading,
-}) => {
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getRandomColor = (name) => {
-    const colors = ["#183fa7", "#075E54", "#25D366", "#34B7F1", "#ECE5DD"];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getContacts();
+      console.log("Fetched customers:", data);
+      setCustomers(data);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      setError("Failed to load customers. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    return colors[Math.abs(hash) % colors.length];
   };
 
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress sx={{ color: "#128C7E" }} />
-      </Box>
-    );
-  }
+  const handleCustomerClick = (customer) => {
+    console.log("Clicked customer:", customer);
+    if (onSelectCustomer) {
+      onSelectCustomer(customer);
+    }
+  };
+
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.whatsappNumber?.includes(searchTerm)
+  );
+
+  const formatMessagePreview = (message) => {
+    if (!message) return "";
+    return message.length > 50 ? message.substring(0, 47) + "..." : message;
+  };
 
   return (
-    <Box
+    <Paper
       sx={{
-        width: "100%",
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#f8f9fa",
-        borderRight: "1px solid",
-        borderColor: "divider",
-        boxShadow: "inset -1px 0 0 rgba(0, 0, 0, 0.1)",
-        fontFamily: "Poppins, sans-serif",
-        overflowY: "scroll",
-        overflowX: "hidden",
+        bgcolor: "background.paper",
+        borderRadius: 1,
+        overflow: "hidden",
       }}
     >
-      <Box
-        sx={{
-          p: 2,
-          backgroundColor: "white",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 2,
-            fontWeight: 600,
-            color: "#128C7E",
-            fontSize: "1.1rem",
-            fontFamily: "Poppins, sans-serif",
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
           }}
-        >
-          Chats
-        </Typography>
-        <Paper
-          elevation={0}
-          component="form"
-          sx={{
-            p: "2px 4px",
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: alpha("#000", 0.03),
-            borderRadius: 2,
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              backgroundColor: alpha("#000", 0.05),
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            },
-          }}
-        >
-          <IconButton sx={{ p: "10px" }} aria-label="search">
-            <SearchIcon sx={{ color: alpha("#000", 0.54) }} />
-          </IconButton>
-          <StyledInputBase
-            sx={{
-              ml: 1,
-              flex: 1,
-              "& input": {
-                padding: "8px 0",
-                fontSize: "0.95rem",
-              },
-            }}
-            placeholder="Search customers"
-          />
-        </Paper>
+        />
       </Box>
 
-      <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-        <List sx={{ padding: "8px 0" }}>
-          {customers.map((customer, index) => (
+      {loading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Box sx={{ p: 2 }}>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      ) : (
+        <List sx={{ flexGrow: 1, overflow: "auto", px: 0 }}>
+          {filteredCustomers.map((customer) => (
             <React.Fragment key={customer.id}>
-              <ListItemButton
+              <ListItem
+                button
                 selected={selectedCustomer?.id === customer.id}
-                onClick={() => onSelectCustomer(customer)}
+                onClick={() => handleCustomerClick(customer)}
                 sx={{
-                  py: 1.5,
-                  px: 2,
-                  transition: "all 0.2s ease-in-out",
-                  "&.Mui-selected": {
-                    backgroundColor: alpha("#128C7E", 0.08),
-                    "&:hover": {
-                      backgroundColor: alpha("#128C7E", 0.12),
-                    },
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 4,
-                      backgroundColor: "#128C7E",
-                      borderRadius: "0 4px 4px 0",
-                    },
-                  },
                   "&:hover": {
-                    backgroundColor: alpha("#000", 0.04),
-                    transform: "translateX(4px)",
+                    bgcolor: "action.hover",
                   },
-                  position: "relative",
+                  "&.Mui-selected": {
+                    bgcolor: "primary.light",
+                    "&:hover": {
+                      bgcolor: "primary.light",
+                    },
+                  },
                 }}
               >
                 <ListItemAvatar>
-                  <StyledBadge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                    variant="dot"
-                  >
-                    <Avatar
-                      sx={{
-                        bgcolor: getRandomColor(customer.name),
-                        width: 48,
-                        height: 48,
-                        fontSize: "1.2rem",
-                        fontWeight: 600,
-                        fontFamily: "Poppins, sans-serif",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                      }}
-                    >
-                      {getInitials(customer.name)}
-                    </Avatar>
-                  </StyledBadge>
+                  <Avatar sx={{ bgcolor: "primary.main" }}>
+                    {customer.fullName?.[0] || "?"}
+                  </Avatar>
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                        color: "#1a1a1a",
-                        fontSize: "0.95rem",
-                        mb: 0.5,
-                        fontFamily: "Poppins, sans-serif",
-                      }}
-                    >
-                      {customer.name}
+                    <Typography variant="subtitle1" noWrap>
+                      {customer.fullName || customer.whatsappNumber}
                     </Typography>
                   }
                   secondary={
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 0.5,
-                      }}
-                    >
+                    <Box>
                       <Typography
                         variant="body2"
-                        sx={{
-                          color: alpha("#000", 0.6),
-                          fontSize: "0.85rem",
-                          fontFamily: "Poppins, sans-serif",
-                        }}
+                        color="text.secondary"
+                        noWrap
+                        component="div"
                       >
-                        {customer.bank}
+                        {customer.whatsappNumber}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "#128C7E",
-                          fontWeight: 600,
-                          fontSize: "0.9rem",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          fontFamily: "Poppins, sans-serif",
-                        }}
-                      >
-                        EMI Due: ₹{customer.amount}
-                      </Typography>
+                      {customer.lastMessage && (
+                        <>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            noWrap
+                            sx={{ mt: 0.5 }}
+                          >
+                            {formatMessagePreview(customer.lastMessage)}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {customer.lastMessageTime
+                              ? formatDistanceToNow(new Date(customer.lastMessageTime), {
+                                  addSuffix: true,
+                                })
+                              : ""}
+                          </Typography>
+                        </>
+                      )}
                     </Box>
                   }
                 />
-              </ListItemButton>
-              {index < customers.length - 1 && (
-                <Divider
-                  variant="inset"
-                  component="li"
-                  sx={{
-                    ml: 2,
-                    mr: 2,
-                    opacity: 0.6,
-                  }}
-                />
-              )}
+              </ListItem>
+              <Divider component="li" />
             </React.Fragment>
           ))}
         </List>
-      </Box>
-    </Box>
+      )}
+    </Paper>
   );
 };
 

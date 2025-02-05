@@ -1,69 +1,109 @@
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import SendIcon from "@mui/icons-material/Send";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Avatar,
   Box,
-  IconButton,
-  InputBase,
-  Paper,
   Typography,
+  TextField,
+  Button,
+  Paper,
+  CircularProgress,
   Snackbar,
   Alert,
+  Avatar,
+  Divider,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import React, { useState } from "react";
-import { sendWhatsAppMessage } from "../services/api";
+import SendIcon from "@mui/icons-material/Send";
+import { getMessages, sendMessage } from "../services/watiService";
+import { formatDistanceToNow } from "date-fns";
 
 const ChatWindow = ({ selectedCustomer }) => {
-  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSendMessage = async () => {
-    if (message.trim()) {
-      const newMessage = {
-        content: message,
-        timestamp: new Date(),
-        type: "sent",
-      };
-      setMessages((prev) => [...prev, newMessage]);
+  const fetchMessages = async () => {
+    if (!selectedCustomer?.whatsappNumber) return;
 
-      if (message.trim().toUpperCase() === "EMI") {
-        try {
-          await sendWhatsAppMessage(selectedCustomer);
-          setSnackbar({
-            open: true,
-            message: "WhatsApp message sent successfully!",
-            severity: "success",
-          });
-        } catch (error) {
-          setSnackbar({
-            open: true,
-            message: "Error sending WhatsApp message",
-            severity: "error",
-          });
-        }
-      }
-      setMessage("");
+    try {
+      setLoading(true);
+      console.log("Fetching messages for:", selectedCustomer.whatsappNumber);
+      const data = await getMessages(selectedCustomer.whatsappNumber);
+      console.log("Fetched messages:", data);
+      setMessages(data || []);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to load messages",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  // Fetch messages when customer changes
+  useEffect(() => {
+    console.log("Selected customer changed:", selectedCustomer);
+    if (selectedCustomer?.whatsappNumber) {
+      fetchMessages();
+    }
+  }, [selectedCustomer]);
+
+  // Set up auto-refresh interval
+  useEffect(() => {
+    if (selectedCustomer?.whatsappNumber) {
+      const interval = setInterval(fetchMessages, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedCustomer]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = 0; // Scroll to top for newest messages
+    }
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedCustomer?.whatsappNumber) return;
+
+    try {
+      console.log("Sending message to:", selectedCustomer.whatsappNumber);
+      await sendMessage(selectedCustomer.whatsappNumber, newMessage);
+      
+      // Add message to local state immediately
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: "sent",
+          content: newMessage,
+          timestamp: new Date(),
+          sender: "You"
+        },
+      ]);
+      setNewMessage("");
+      
+      // Fetch messages to get the updated list
+      fetchMessages();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to send message",
+        severity: "error",
+      });
     }
   };
 
@@ -71,272 +111,192 @@ const ChatWindow = ({ selectedCustomer }) => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const formatMessageTime = (timestamp) => {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+  };
+
   if (!selectedCustomer) {
     return (
       <Box
         sx={{
+          height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          height: "100%",
-          bgcolor: "#f0f2f5",
-          flexDirection: "column",
-          gap: 2,
         }}
       >
-        <Avatar
-          sx={{
-            width: 80,
-            height: 80,
-            bgcolor: alpha("#128C7E", 0.1),
-            color: "#128C7E",
-          }}
-        >
-          💬
-        </Avatar>
-        <Typography
-          variant="h6"
-          color="text.secondary"
-          sx={{ fontFamily: "Poppins" }}
-        >
-          Select a customer to view EMI details
+        <Typography variant="h6" color="text.secondary">
+          Select a customer to start chatting
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Paper
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "background.paper",
+        borderRadius: 1,
+        overflow: "hidden",
+      }}
+    >
       {/* Chat Header */}
-      <Paper
-        elevation={1}
+      <Box
         sx={{
-          px: 2,
-          py: 1,
+          p: 2,
+          borderBottom: 1,
+          borderColor: "divider",
           display: "flex",
           alignItems: "center",
           gap: 2,
-          borderRadius: 0,
-          backgroundColor: "#f0f2f5",
+          bgcolor: "primary.light",
         }}
       >
-        <Avatar
-          sx={{
-            bgcolor: "#128C7E",
-            width: 40,
-            height: 40,
-          }}
-        >
-          {getInitials(selectedCustomer.name)}
+        <Avatar sx={{ bgcolor: "primary.main", width: 48, height: 48 }}>
+          {selectedCustomer.fullName?.[0] || "?"}
         </Avatar>
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-            {selectedCustomer.name}
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ color: "white" }}>
+            {selectedCustomer.fullName || selectedCustomer.whatsappNumber}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {selectedCustomer.bank}
+          <Typography variant="body2" sx={{ color: "white" }}>
+            {selectedCustomer.whatsappNumber}
           </Typography>
         </Box>
-      </Paper>
+      </Box>
 
+      {/* Messages Area */}
       <Box
+        ref={messagesContainerRef}
         sx={{
           flexGrow: 1,
-          bgcolor: "#efeae2",
-          backgroundImage:
-            "linear-gradient(rgba(229, 221, 213, 0.85), rgba(229, 221, 213, 0.85))",
           overflow: "auto",
-          p: 2,
           display: "flex",
-          flexDirection: "column",
-          gap: 2,
+          flexDirection: "column-reverse", // Reverse the direction
+          gap: 1,
+          p: 2,
+          bgcolor: "#f5f5f5",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Paper
-            sx={{
-              py: 0.5,
-              px: 2,
-              maxWidth: "70%",
-              backgroundColor: "#FFF",
-              borderRadius: "8px",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Messages are end-to-end encrypted
-            </Typography>
-          </Paper>
-        </Box>
-
-        {/* EMI Message */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Paper
-            elevation={1}
-            sx={{
-              p: 2,
-              maxWidth: "70%",
-              bgcolor: "#dcf8c6",
-              borderRadius: "8px 8px 0 8px",
-              position: "relative",
-            }}
-          >
-            <Typography variant="body1" paragraph sx={{ mb: 1 }}>
-              EMI Amount: ₹{selectedCustomer.amount}
-            </Typography>
-            <Typography variant="body1" paragraph sx={{ mb: 1 }}>
-              Month: {selectedCustomer.month}
-            </Typography>
-            <Typography variant="body1">
-              Due Date: {selectedCustomer.dueDate}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                display: "block",
-                textAlign: "right",
-                mt: 1,
-                color: "text.secondary",
-              }}
-            >
-              {new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Typography>
-          </Paper>
-        </Box>
-
-        {/* User Messages */}
-        {messages.map((msg, index) => (
+        {loading ? (
           <Box
-            key={index}
             sx={{
               display: "flex",
-              justifyContent: msg.type === "sent" ? "flex-end" : "flex-start",
-              gap: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
             }}
           >
-            {msg.type !== "sent" && (
-              <Avatar
-                sx={{
-                  bgcolor: "#128C7E",
-                  width: 35,
-                  height: 35,
-                  fontSize: "0.9rem",
-                }}
-              >
-                {getInitials(selectedCustomer.name)}
-              </Avatar>
-            )}
-            <Paper
-              elevation={1}
-              sx={{
-                p: 2,
-                maxWidth: "70%",
-                bgcolor: msg.type === "sent" ? "#dcf8c6" : "#FFF",
-                borderRadius:
-                  msg.type === "sent" ? "8px 8px 0 8px" : "0 8px 8px 8px",
-              }}
-            >
-              <Typography variant="body1">{msg.content}</Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  display: "block",
-                  textAlign: "right",
-                  mt: 1,
-                  color: "text.secondary",
-                }}
-              >
-                {msg.timestamp.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Typography>
-            </Paper>
+            <CircularProgress />
           </Box>
-        ))}
+        ) : messages.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <Typography color="text.secondary">No messages yet</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column-reverse" }}>
+            {messages.map((message, index) => (
+              <Box
+                key={message.id || index}
+                sx={{
+                  alignSelf: message.type === "sent" ? "flex-end" : "flex-start",
+                  maxWidth: "70%",
+                  mb: 2,
+                }}
+              >
+                <Paper
+                  sx={{
+                    p: 1.5,
+                    bgcolor: message.type === "sent" ? "#DCF8C6" : "white",
+                    borderRadius: 2,
+                    boxShadow: 1,
+                  }}
+                >
+                  {message.sender && (
+                    <Typography
+                      variant="caption"
+                      color="primary"
+                      sx={{ display: "block", mb: 0.5, fontWeight: "medium" }}
+                    >
+                      {message.sender}
+                    </Typography>
+                  )}
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                    {message.content}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5, textAlign: "right" }}
+                  >
+                    {formatMessageTime(message.timestamp)}
+                  </Typography>
+                </Paper>
+              </Box>
+            ))}
+          </Box>
+        )}
       </Box>
 
       {/* Message Input */}
-      <Paper
-        component="form"
+      <Box
         sx={{
-          p: "8px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          backgroundColor: "#f0f2f5",
-          borderRadius: 0,
+          p: 2,
+          borderTop: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
         }}
       >
-        <IconButton color="default">
-          <AttachFileIcon />
-        </IconButton>
-        <InputBase
-          multiline
-          maxRows={4}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          sx={{
-            flex: 1,
-            backgroundColor: "#FFF",
-            borderRadius: "8px",
-            px: 2,
-            py: 1,
-          }}
-          placeholder="Type a message"
-        />
-        <IconButton
-          color="primary"
-          onClick={handleSendMessage}
-          sx={{
-            bgcolor: "#128C7E",
-            color: "#FFF",
-            "&:hover": {
-              bgcolor: "#075E54",
-            },
-          }}
-        >
-          <SendIcon />
-        </IconButton>
-      </Paper>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Type a message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
+            multiline
+            maxRows={4}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+              },
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            endIcon={<SendIcon />}
+            onClick={handleSendMessage}
+            disabled={!newMessage.trim()}
+            sx={{ borderRadius: 2, px: 3 }}
+          >
+            Send
+          </Button>
+        </Box>
+      </Box>
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        sx={{
-          "& .MuiPaper-root": {
-            backgroundColor: "#075E54",
-            borderRadius: "4px",
-            minWidth: "auto",
-          },
-        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          icon={false}
-          sx={{
-            backgroundColor:
-              snackbar.severity === "success" ? "#128C7E" : "#d32f2f",
-            color: "#fff",
-            "& .MuiAlert-action": {
-              alignItems: "center",
-              color: "#fff",
-            },
-            minWidth: "auto",
-            px: 2,
-            py: 1,
-          }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   );
 };
 
