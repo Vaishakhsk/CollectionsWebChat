@@ -1,7 +1,7 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
-  // Proxy all API requests to our Express server
+  // Proxy API requests to our local Express server
   app.use(
     '/api',
     createProxyMiddleware({
@@ -23,6 +23,34 @@ module.exports = function(app) {
         }));
       },
       // Log all proxy requests for debugging
+      logLevel: 'debug'
+    })
+  );
+  
+  // Proxy requests to dhanamsit.com
+  app.use(
+    '/dhanamsit',
+    createProxyMiddleware({
+      target: 'https://dhanamsit.com',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/dhanamsit': '', // Remove /dhanamsit prefix
+      },
+      secure: false, // Accept self-signed certificates
+      onProxyReq: (proxyReq, req, res) => {
+        proxyReq.setHeader('Accept', 'application/json');
+        // Add any other headers required by dhanamsit.com
+      },
+      onError: (err, req, res) => {
+        console.error('Dhanamsit proxy error:', err);
+        res.writeHead(500, {
+          'Content-Type': 'application/json'
+        });
+        res.end(JSON.stringify({ 
+          error: 'Dhanamsit proxy error', 
+          message: err.message
+        }));
+      },
       logLevel: 'debug'
     })
   );

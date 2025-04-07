@@ -11,12 +11,12 @@ const PORT = process.env.SERVER_PORT || process.env.PORT || 5000;
 // WhatsApp API credentials
 const WHATSAPP_TOKEN = "EAAR4Iz3BWgkBOylKDwPTJgIZAeDSedJLrhO7vNVZBoPTXWDlJr6T8sjWmxwPOkcxGIeUXH5RUazrMyo6VD0GawYyOFNqAoOzvQfkGzbbAbSz5VDXEobwbNOZBs8uwJUie7UEAZC1x1uWnoE7fRu3VkfosOcbvcZAJpzkjckxZBbZB2ODKbGNgBYwXEwicMsOZBwO8CZB0SMh4ZCGDWiaycsPo7IxiIZBkSBxvN0UftNBrs4";
 const PHONE_NUMBER_ID = "472391889294613";
-const WEBHOOK_VERIFICATION_TOKEN = "wap-ccad-4574-a669-0e495dee75310"; // Updated verification token
+const WEBHOOK_VERIFICATION_TOKEN = "wap-ccad-4574-a669-0e495dee75311"; // Updated verification token
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://dhanamsit.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

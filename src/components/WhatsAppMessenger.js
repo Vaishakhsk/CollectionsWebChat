@@ -69,7 +69,7 @@ const WhatsAppMessenger = () => {
         id: 'webhook-info',
         from: 'system',
         type: 'text',
-        content: 'Listening for incoming messages from webhook: https://dhanamsit.com/api/webhook',
+        content: 'Listening for incoming messages from webhook: https://wso-prod-dhanam.mifix.io/cts/1.0/payment/verify-whatsapp-webhook',
         timestamp: new Date().toISOString(),
         read: true
       }
@@ -292,8 +292,8 @@ const WhatsAppMessenger = () => {
     try {
       setLoading(true);
       
-      // Use axios to call our test webhook endpoint
-      const response = await axios.post('https://dhanamsit.com/api/webhook/test', {
+      // Use axios to call our test webhook endpoint through the proxy
+      const response = await axios.post('/api/webhook/test', {
         text: 'This is a test message from the webhook',
         from: phoneNumber || '918511044804'
       });

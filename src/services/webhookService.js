@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Use the API endpoint to get messages from our server
-const WEBHOOK_URL = 'https://dhanamsit.com/api/messages'; // Update the API endpoint URL
+// Using a relative path will route through the proxy in setupProxy.js
+const WEBHOOK_URL = '/api/messages'; // Update the API endpoint URL
 
 // Store for incoming messages
 let incomingMessages = [];
