@@ -205,11 +205,11 @@ const ChatWindow = ({ selectedCustomer }) => {
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column-reverse" }}>
-            {messages.map((message, index) => (
+            {Array.isArray(messages) && messages.map((message, index) => (
               <Box
-                key={message.id || index}
+                key={message?.id || index}
                 sx={{
-                  alignSelf: message.type === "sent" ? "flex-end" : "flex-start",
+                  alignSelf: message?.type === "sent" ? "flex-end" : "flex-start",
                   maxWidth: "70%",
                   mb: 2,
                 }}
@@ -217,7 +217,7 @@ const ChatWindow = ({ selectedCustomer }) => {
                 <Paper
                   sx={{
                     p: 1.5,
-                    bgcolor: message.type === "sent" ? "#DCF8C6" : "white",
+                    bgcolor: message?.type === "sent" ? "#DCF8C6" : "white",
                     borderRadius: 2,
                     boxShadow: 1,
                   }}
